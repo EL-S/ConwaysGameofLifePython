@@ -2,12 +2,13 @@ import pygame
 from time import sleep
 from pygame.locals import *
 from random import randint
+from math import floor
 
 width = 40
 height = 40
 dead = (255,255,255)
 alive = (0,0,0)
-rand_gen = True
+rand_gen = False
 grid_size = 16
 running = True
 
@@ -16,18 +17,8 @@ pygame.init()
 
 
 def init(rand_gen):
-    if rand_gen:
-        grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
-    else:
-        grid = [[0 for x in range(width)] for y in range(height)]
-        grid[51][52] = 1
-        grid[51][53] = 1
-        grid[52][52] = 1
-        grid[53][52] = 1
-        grid[52][51] = 1
-
+    grid = reset(rand_gen)
     return grid
-grid = init(rand_gen)
 
 def check_logic(location):
     value = 0
@@ -83,8 +74,25 @@ def update_board(location,state):
     else:
         new_grid[location[0]][location[1]] = 0
 
-def reset():
-    grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
+def change_life(x,y):
+    if grid[y][x] == 1:
+        grid[y][x] = 0
+    else:
+        grid[y][x] = 1
+    special_screen_draw()
+
+def reset(rand_gen):
+    if rand_gen:
+        grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
+    else:
+        grid = [[0 for x in range(width)] for y in range(height)]
+        x = round(width/2)
+        y = round(height/2)
+        grid[y + 1][x + 2] = 1
+        grid[y + 1][x + 3] = 1
+        grid[y + 2][x + 2] = 1
+        grid[y + 3][x + 2] = 1
+        grid[y + 2][x + 1] = 1
     return grid
 
 def update_game(grid,new_grid):
@@ -95,24 +103,73 @@ def update_game(grid,new_grid):
 
 def draw_screen():
     pygame.display.flip()
-    
+
+def special_screen_draw():
+    screen.fill(dead)
+    for y in range(0,height):
+        for x in range(0,width):
+            location = [y,x]
+            state = grid[location[0]][location[1]]
+            if state == 1:
+                pygame.draw.rect(screen, alive, (location[1]*grid_size, location[0]*grid_size, grid_size, grid_size))
+    draw_screen()
+
 pause = True
-c = 0
+buildmode = False
+c = -1
+
+grid = init(rand_gen)
 
 while running:
     for event in pygame.event.get():
         if event.type == MOUSEBUTTONUP:
             if event.button == 1: #pause/play on left click
+                if buildmode == False:
+                    if pause == True:
+                        pause = False
+                        print("resumed")
+                    else:
+                        print("paused")
+                        pause = True
+                else:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    print(mouse_x,mouse_y)
+                    grid_x = floor(mouse_x/grid_size)
+                    grid_y = floor(mouse_y/grid_size)
+                    print(grid_x,grid_y)
+                    change_life(grid_x,grid_y)
+            elif event.button == 3: #new randgen on right click
+                grid = reset(rand_gen)
+                c = -1
+                print("reset")
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
                 if pause == True:
                     pause = False
+                    print("resumed")
                 else:
+                    print("paused")
                     pause = True
-            elif event.button == 3: #new randgen on right click
-                grid = reset()
-                c = 0
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                grid = reset(rand_gen)
+                c = -1
+                print("reset")
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_b:
+                if buildmode == True:
+                    buildmode = False
+                    print("build mode off")
+                else:
+                    buildmode = True
+                    print("build mode on")
         if event.type == QUIT:
                 running = False
-    if (not pause) or (c == 0):
+    if (c == -1) and (pause == True):
+        special_screen_draw()
+        c = 0
+    
+    if (not pause):
         screen.fill(dead)
         new_grid = [[0 for x in range(width)] for y in range(height)] 
         for y in range(0,height):
