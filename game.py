@@ -3,12 +3,12 @@ from time import sleep
 from pygame.locals import *
 from random import randint
 
-width = 100
-height = 100
+width = 40
+height = 40
 dead = (255,255,255)
 alive = (0,0,0)
 rand_gen = True
-grid_size = 4
+grid_size = 16
 running = True
 
 screen = pygame.display.set_mode((width*grid_size,height*grid_size))
@@ -17,7 +17,7 @@ pygame.init()
 
 def init(rand_gen):
     if rand_gen:
-        grid = [[randint(0,1) for x in range(width)] for y in range(height)]
+        grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
     else:
         grid = [[0 for x in range(width)] for y in range(height)]
         grid[51][52] = 1
@@ -32,14 +32,38 @@ grid = init(rand_gen)
 def check_logic(location):
     value = 0
     current_state = grid[location[0]][location[1]]
-    above = grid[location[0]+1][location[1]]
-    below = grid[location[0]-1][location[1]]
-    left = grid[location[0]][location[1]-1]
-    right = grid[location[0]][location[1]+1]
-    topleft = grid[location[0]+1][location[1]-1]
-    topright = grid[location[0]+1][location[1]+1]
-    bottomleft = grid[location[0]-1][location[1]-1]
-    bottomright = grid[location[0]-1][location[1]+1]
+    try:
+        above = grid[location[0]+1][location[1]]
+    except:
+        above = 0
+    try:
+        below = grid[location[0]-1][location[1]]
+    except:
+        below = 0
+    try:
+        left = grid[location[0]][location[1]-1]
+    except:
+        left = 0
+    try:
+        right = grid[location[0]][location[1]+1]
+    except:
+        right = 0
+    try:
+        topleft = grid[location[0]+1][location[1]-1]
+    except:
+        topleft = 0
+    try:
+        topright = grid[location[0]+1][location[1]+1]
+    except:
+        topright = 0
+    try:
+        bottomleft = grid[location[0]-1][location[1]-1]
+    except:
+        bottomleft = 0
+    try:
+        bottomright = grid[location[0]-1][location[1]+1]
+    except:
+        bottomright = 0
     value = above + below + left + right + topleft + topright + bottomleft + bottomright
     if current_state == 1:
         if value > 3:
@@ -60,7 +84,7 @@ def update_board(location,state):
         new_grid[location[0]][location[1]] = 0
 
 def reset():
-    grid = [[randint(0,1) for x in range(width)] for y in range(height)]
+    grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
     return grid
 
 def update_game(grid,new_grid):
@@ -91,8 +115,8 @@ while running:
     if (not pause) or (c == 0):
         screen.fill(dead)
         new_grid = [[0 for x in range(width)] for y in range(height)] 
-        for y in range(0,height-1):
-            for x in range(0,width-1):
+        for y in range(0,height):
+            for x in range(0,width):
                 location = [y,x]
                 new_state = check_logic(location)
                 update_board(location,new_state)
