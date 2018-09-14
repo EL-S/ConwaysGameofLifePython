@@ -67,7 +67,7 @@ def check_logic(location):
             return True
         return False
 
-def update_board(location,state):
+def update_board(location,state,new_grid):
     if state:
         pygame.draw.rect(screen, alive, (location[1]*grid_size, location[0]*grid_size, grid_size, grid_size))
         new_grid[location[0]][location[1]] = 1
@@ -80,6 +80,18 @@ def change_life(x,y):
     else:
         grid[y][x] = 1
     special_screen_draw()
+
+def next_gen(grid,c):
+    screen.fill(dead)
+    new_grid = [[0 for x in range(width)] for y in range(height)] 
+    for y in range(0,height):
+        for x in range(0,width):
+            location = [y,x]
+            new_state = check_logic(location)
+            update_board(location,new_state,new_grid)
+    grid = update_game(grid,new_grid)
+    c += 1
+    return grid,c
 
 def reset(rand_gen):
     if rand_gen:
@@ -163,6 +175,10 @@ while running:
                 else:
                     buildmode = True
                     print("build mode on")
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_n:
+                print("step generation")
+                grid,c = next_gen(grid,c)
         if event.type == QUIT:
                 running = False
     if (c == -1) and (pause == True):
@@ -170,14 +186,6 @@ while running:
         c = 0
     
     if (not pause):
-        screen.fill(dead)
-        new_grid = [[0 for x in range(width)] for y in range(height)] 
-        for y in range(0,height):
-            for x in range(0,width):
-                location = [y,x]
-                new_state = check_logic(location)
-                update_board(location,new_state)
-        grid = update_game(grid,new_grid)
-        c += 1
+        grid,c = next_gen(grid,c)
 pygame.quit()
 
