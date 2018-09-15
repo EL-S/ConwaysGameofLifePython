@@ -4,12 +4,12 @@ from pygame.locals import *
 from random import randint
 from math import floor
 
-width = 40
-height = 40
+width = 200
+height = 200
 dead = (255,255,255)
 alive = (0,0,0)
 rand_gen = False
-grid_size = 16
+grid_size = 4
 running = True
 
 screen = pygame.display.set_mode((width*grid_size,height*grid_size))
@@ -93,8 +93,10 @@ def next_gen(grid,c):
     c += 1
     return grid,c
 
-def reset(rand_gen):
-    if rand_gen:
+def reset(rand_gen,saved_grid=False):
+    if (saved_grid != False):
+        grid = saved_grid
+    elif rand_gen:
         grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
     else:
         grid = [[0 for x in range(width)] for y in range(height)]
@@ -106,6 +108,10 @@ def reset(rand_gen):
         grid[y + 3][x + 2] = 1
         grid[y + 2][x + 1] = 1
     return grid
+
+def save(grid):
+    saved_grid = grid
+    return saved_grid
 
 def update_game(grid,new_grid):
     grid = new_grid
@@ -131,6 +137,7 @@ buildmode = False
 c = -1
 
 grid = init(rand_gen)
+saved_grid = False
 
 while running:
     for event in pygame.event.get():
@@ -179,6 +186,18 @@ while running:
             if event.key == pygame.K_n:
                 print("step generation")
                 grid,c = next_gen(grid,c)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                print("save game")
+                saved_grid = save(grid)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_l:
+                if saved_grid != False:
+                    print("load game")
+                    grid = reset(rand_gen,saved_grid)
+                    c = -1
+                else:
+                    print("no save to load")
         if event.type == QUIT:
                 running = False
     if (c == -1) and (pause == True):
