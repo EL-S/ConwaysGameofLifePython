@@ -11,7 +11,6 @@ alive = (0,0,0)
 rand_gen = False
 grid_size = 8
 running = True
-saved_grid = False
 border_thickness = round(grid_size/8)
 
 screen = pygame.display.set_mode((width*grid_size,height*grid_size))
@@ -76,13 +75,12 @@ def update_board(location,state,new_grid):
     else:
         new_grid[location[0]][location[1]] = 0
 
-def change_life(grid,x,y,gridmode):
+def change_life(x,y,gridmode):
     if grid[y][x] == 1:
         grid[y][x] = 0
     else:
         grid[y][x] = 1
     special_screen_draw(gridmode)
-    return grid
 
 def next_gen(grid,c,gridmode):
     screen.fill(dead)
@@ -97,8 +95,7 @@ def next_gen(grid,c,gridmode):
     return grid,c
 
 def reset(rand_gen,saved_grid=False):
-    print(saved_grid)
-    if saved_grid:
+    if (saved_grid != False):
         grid = saved_grid
     elif rand_gen:
         grid = [[randint(0,1) for x in range(width+1)] for y in range(height+1)]
@@ -112,6 +109,10 @@ def reset(rand_gen,saved_grid=False):
         grid[y + 3][x + 2] = 1
         grid[y + 2][x + 1] = 1
     return grid
+
+def save(grid):
+    saved_grid = grid
+    return saved_grid
 
 def update_game(grid,new_grid,gridmode):
     grid = new_grid
@@ -140,18 +141,13 @@ def special_screen_draw(gridmode=False):
                 pygame.draw.rect(screen, alive, (location[1]*grid_size, location[0]*grid_size, grid_size, grid_size))
     draw_screen(gridmode)
 
-def save(grid):
-    saved_grid = grid
-    print(saved_grid,grid)
-    return saved_grid
-
 pause = True
 buildmode = False
 gridmode = True
 c = -1
 
 grid = init(rand_gen)
-
+saved_grid = False
 
 while running:
     for event in pygame.event.get():
@@ -170,7 +166,7 @@ while running:
                     grid_x = floor(mouse_x/grid_size)
                     grid_y = floor(mouse_y/grid_size)
                     print(grid_x,grid_y)
-                    grid = change_life(grid,grid_x,grid_y,gridmode)
+                    change_life(grid_x,grid_y,gridmode)
             elif event.button == 3: #new randgen on right click
                 grid = reset(rand_gen)
                 c = -1
